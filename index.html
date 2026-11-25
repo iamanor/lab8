@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Proportional Symbols</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+		  crossorigin=""/>
+         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+		  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+		  crossorigin=""></script>
+		 <script type="text/javascript" src="data.js"></script>
+		 <style type="text/css">
+		  	html, body { margin: 0; padding: 0; height: 100%; }
+		  	#map { min-height: 100%; }
+			.library-popup {
+			font-family: Arial, sans-serif;
+			min-width: 230px;
+			}
+
+			.library-popup h3 {
+			margin: 0 0 6px;
+			font-size: 18px;
+			color: #222;
+			}
+
+			.library-address {
+			color: #666;
+			font-size: 12px;
+			margin-bottom: 12px;
+			}
+
+			.visitor-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 12px;
+			}
+
+			.visitor-table th {
+			background: #34495e;
+			color: white;
+			text-align: left;
+			}
+
+			.visitor-table th,
+			.visitor-table td {
+			padding: 5px 8px;
+			border-bottom: 1px solid #ddd;
+			}
+
+			.visitor-table tr:nth-child(even) {
+			background: #f4f4f4;
+			}
+
+			.visitor-table td:last-child,
+			.visitor-table th:last-child {
+			text-align: right;
+			}
+
+			.visitor-table .visitor-total {
+			background: #e2e8f0;
+			font-weight: bold;
+			}
+		 </style>
+    </head>
+    <body>
+	 <div id="map"></div>
+        <script type="text/javascript">
+			var map = L.map('map', {
+			  center: [41.84, -87.68],
+			  zoom: 12
+			});
+			L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+			   attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>',
+			   maxZoom: 16,
+			   minZoom: 3
+			}).addTo(map);
+			var maxVisitor = 653728;
+
+			L.geoJson(data, {
+			    pointToLayer(feature, latlng) {
+			    	// I use November's visitors to controls the icon size
+			        var nov_visits = Number(feature.properties.november * 12); //Scaled up as a 12 month avg to compare with maxVisitors scaler
+			        var scaler = Math.sqrt(nov_visits / maxVisitor) * 100; 
+
+			        const librarySvg = L.icon({
+			            iconUrl: 'notebook-location.svg',
+			            iconSize: [scaler, scaler],
+			            iconAnchor: [scaler / 2, scaler / 2]
+			        });
+
+			        return L.marker(latlng, {icon: librarySvg});
+			    },
+
+			    onEachFeature(feature, layer) {
+			        var p = feature.properties;
+
+			        var months = [
+			            'january', 'february', 'march', 'april',
+			            'may', 'june', 'july', 'august',
+			            'september', 'october', 'november', 'december'
+			        ];
+			        //start popup with name, address and start of table.
+			        var popup = '<div class="library-popup"><h3>'+p.branch+'</h3><div class="library-address">'+p.address+'<br>'+p.city+', IL '+p.zip+'</div><table class="visitor-table"><tr><th>Month</th><th>Visitors</th></tr>';
+
+			        for (var i = 0; i < months.length; i++) { // Loop through each month
+					    var month = months[i]; // Get the current month
+
+					    var capitalLetter = month.charAt(0).toUpperCase(); // Get the uppercase letter of the month
+					    var remainingLetters = month.slice(1);
+					    var name = capitalLetter + remainingLetters; // Capitalized month name
+
+					    // Show numbers with commas using toLocaleString
+					    popup += "<tr><td>"+name+"</td><td>"+Number(p[month]).toLocaleString()+"</td></tr>";
+					}
+
+			        popup += '<tr class="visitor-total"><td>Total</td><td>'+Number(p.ytd).toLocaleString()+'</td></tr></table></div>';
+
+			        //Bind the popup html to the layer for the clicked feature
+			        layer.bindPopup(popup, {
+			            minWidth: 230,
+			            maxWidth: 350,
+			            maxHeight: 450
+			        });
+			    }
+			}).addTo(map);	
+        </script>
+   </body>
+</html>

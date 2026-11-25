@@ -1,0 +1,3 @@
+AI Statement
+
+For this assignment, I used ChatGPT to help me understand how to loop through an array of months using a JavaScript for loop. I also asked ChatGPT how to capitalize the first letter of each month name. ChatGPT explained how to use the charAt(), toUpperCase(), and slice() functions to capitalize the first letter and combine it with the rest of the word. I also used ChatGPT to help me format the table and style the popup heading using CSS. This helped me understand how to loop through an array, format month names, and improve the appearance of the popup in my Leaflet map.
